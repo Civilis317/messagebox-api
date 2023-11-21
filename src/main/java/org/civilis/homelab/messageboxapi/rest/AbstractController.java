@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.civilis.homelab.messageboxapi.exception.ApplicationException;
+import org.civilis.homelab.messageboxapi.exception.NotAuthorizedException;
 import org.civilis.homelab.messageboxapi.exception.NotFoundException;
 import org.civilis.homelab.messageboxapi.exception.ValidationException;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +31,17 @@ public abstract class AbstractController {
 
     @Value("${app.version}")
     private String version;
+
     @ExceptionHandler
     protected void handleValidationException(ValidationException e, HttpServletResponse response) throws IOException {
         log.warn("Validation failed for: {}", e.getMessagesAsString());
         response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessagesAsString());
+    }
+
+    @ExceptionHandler
+    protected void handleNotAuthorizedException(NotAuthorizedException e, HttpServletResponse response) throws IOException {
+        log.warn("Authorization failed");
+        response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
     }
 
     @ExceptionHandler

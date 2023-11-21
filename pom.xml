@@ -13,7 +13,7 @@
 
 	<groupId>org.civilis.homelab</groupId>
 	<artifactId>messagebox-api</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>messagebox-api</name>
 	<description>Api service  for a messagebox application</description>
 

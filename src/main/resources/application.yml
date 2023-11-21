@@ -48,6 +48,9 @@ springdoc:
     defaultModelsExpandDepth: 0
     try-it-out-enabled: true
 
+auth:
+  api-key: ${API_KEY}
+
 logging:
   level:
     org.springframework: ${LOGLEVEL_SPRING:INFO}
