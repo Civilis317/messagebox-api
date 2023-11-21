@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="00-create-tables.xml" author="boip" context="db">
+
+        <createTable tableName="notification">
+            <column name="id" type="integer" autoIncrement="true" generationType="always" startWith="1"
+                    incrementBy="1">
+                <constraints primaryKeyName="pk_notification" primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_time" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="kind" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="content" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="header">
+            <column name="id" type="integer" autoIncrement="true" generationType="always" startWith="1"
+                    incrementBy="1">
+                <constraints primaryKeyName="pk_header" primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_time" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="varchar(6)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="header" columnNames="product_id, username" constraintName="uk_header_product_user" />
+
+        <createTable tableName="message">
+            <column name="id" type="integer" autoIncrement="true" generationType="always" startWith="1"
+                    incrementBy="1">
+                <constraints primaryKeyName="pk_message" primaryKey="true" nullable="false"/>
+            </column>
+            <column name="header_id" type="integer">
+                <constraints nullable="true" foreignKeyName="fk_message_header"
+                             referencedTableName="header" referencedColumnNames="id"/>
+            </column>
+            <column name="notification_id" type="integer">
+                <constraints nullable="true" foreignKeyName="fk_message_notification"
+                             referencedTableName="notification" referencedColumnNames="id"/>
+            </column>
+            <column name="sender" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_time" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="kind" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="content" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="archive" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

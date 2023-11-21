@@ -1,0 +1,79 @@
+app:
+  name: @project.description@
+  service: @project.name@
+  version: @project.version@
+
+spring:
+  datasource:
+    driver-class-name: ${DB_DRIVER_CLASS}
+    url: ${DB_CONNECT_URL:}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: ${DB_SHOW_SQL}
+    database-platform: ${DB_PLATFORM_DIALECT}
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA}
+    open-in-view: false
+  liquibase:
+    change-log: classpath:liquibase/liquibase-changelog.xml
+    contexts: db
+    enabled: true
+    default-schema: ${DB_SCHEMA}
+    liquibase-schema: ${DB_LB_SCHEMA:}
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+
+server:
+  servlet:
+    context-path: /portal/messagebox
+    encoding:
+      charset: UTF-8
+      force: true
+  tomcat:
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol-header: x-forwarded-proto
+  error:
+    include-message: always
+#    include-binding-errors: always
+
+# openapi
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    # to not have schemas expanded on the swagger page
+    defaultModelsExpandDepth: 0
+    try-it-out-enabled: true
+
+logging:
+  level:
+    org.springframework: ${LOGLEVEL_SPRING:INFO}
+    org.civilis.homelab.messageboxapi: ${LOGLEVEL_APPLICATION:INFO}
+
+management:
+  health:
+    db:
+      enabled: false
+    ldap:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+  server:
+    port: 8090
+  prometheus:
+    metrics:
+      export:
+        enabled: true
