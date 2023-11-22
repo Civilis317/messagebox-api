@@ -3,15 +3,14 @@ package org.civilis.homelab.messageboxapi.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.civilis.homelab.messageboxapi.exception.NotFoundException;
 import org.civilis.homelab.messageboxapi.mapping.HeaderMapper;
 import org.civilis.homelab.messageboxapi.mapping.MessageMapper;
 import org.civilis.homelab.messageboxapi.mapping.NotificationMapper;
 import org.civilis.homelab.messageboxapi.model.Header;
 import org.civilis.homelab.messageboxapi.model.Message;
 import org.civilis.homelab.messageboxapi.model.Notification;
-import org.civilis.homelab.messageboxapi.model.search.FilterPageRequest;
-import org.civilis.homelab.messageboxapi.model.search.PageResponse;
-import org.civilis.homelab.messageboxapi.model.search.SearchUtil;
+import org.civilis.homelab.messageboxapi.model.search.*;
 import org.civilis.homelab.messageboxapi.persistence.entity.HeaderEntity;
 import org.civilis.homelab.messageboxapi.persistence.entity.MessageEntity;
 import org.civilis.homelab.messageboxapi.persistence.entity.NotificationEntity;
@@ -21,7 +20,10 @@ import org.civilis.homelab.messageboxapi.persistence.repository.NotificationRepo
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.LinkedHashSet;
 
 @Slf4j
 @Service
@@ -37,6 +39,51 @@ public class MessageBoxService {
     private final MessageRepository messageRepository;
 
     private final SearchUtil searchUtil;
+
+    public PageResponse<Header> getHeadersByUsername(String username, String status, Integer page, Integer pageSize) {
+        FilterPageRequest<Header> filterPageRequest = buildHeaderFilterRequest(username, status, page, pageSize);
+        return getHeaderPage(filterPageRequest);
+    }
+
+    private FilterPageRequest<Header> buildHeaderFilterRequest(String username, String status, Integer page, Integer pageSize) {
+        FilterPageRequest<Header> filterPageRequest = new FilterPageRequest<>();
+        filterPageRequest.setPage(page);
+        filterPageRequest.setPageSize(pageSize);
+        Header filter = new Header();
+        filter.setUsername(username);
+        filter.setStatus(status);
+        filterPageRequest.setFilter(filter);
+        SortField sortField = new SortField("dateTime", Sort.Direction.ASC);
+        LinkedHashSet<SortField> sortFields = new LinkedHashSet<>();
+        sortFields.add(sortField);
+        filterPageRequest.setSortFields(sortFields);
+        return filterPageRequest;
+    }
+
+    public MessagePageResponse getMessagesByHeaderId(Long headerId, boolean archive, Integer page, Integer pageSize) {
+        HeaderEntity headerEntity = headerRepository.findById(headerId)
+                .orElseThrow(() -> new NotFoundException("header not found for id: " + headerId));
+        Header header = headerMapper.convertEntityToJsonModel(headerEntity);
+        FilterPageRequest<Message> filterPageRequest = buildMessageFilterRequest(headerId, archive, page, pageSize);
+        PageResponse<Message> pageResponse = getMessagePage(filterPageRequest);
+        MessagePageResponse response = new MessagePageResponse(header, pageResponse);
+        return response;
+    }
+
+    private FilterPageRequest<Message> buildMessageFilterRequest(Long headerId, boolean archive, Integer page, Integer pageSize) {
+        FilterPageRequest<Message> filterPageRequest = new FilterPageRequest<>();
+        filterPageRequest.setPage(page);
+        filterPageRequest.setPageSize(pageSize);
+        Message filter = new Message();
+        filter.setHeaderId(headerId);
+        filter.setArchive(archive);
+        filterPageRequest.setFilter(filter);
+        SortField sortField = new SortField("dateTime", Sort.Direction.ASC);
+        LinkedHashSet<SortField> sortFields = new LinkedHashSet<>();
+        sortFields.add(sortField);
+        filterPageRequest.setSortFields(sortFields);
+        return filterPageRequest;
+    }
 
     public PageResponse<Message> getMessagePage(FilterPageRequest<Message> request) {
         Message filter = request.getFilter() == null ? new Message() : request.getFilter();
@@ -134,8 +181,8 @@ public class MessageBoxService {
     }
 
     private String getUsernameFromNotification(Notification notification) {
-        if (! "BOIP".equalsIgnoreCase(notification.getRecipient().trim())) {
-            return  notification.getRecipient();
+        if (!"BOIP".equalsIgnoreCase(notification.getRecipient().trim())) {
+            return notification.getRecipient();
         }
         return notification.getSender();
     }

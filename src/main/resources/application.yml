@@ -47,6 +47,8 @@ springdoc:
     # to not have schemas expanded on the swagger page
     defaultModelsExpandDepth: 0
     try-it-out-enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
 
 auth:
   api-key: ${API_KEY}
